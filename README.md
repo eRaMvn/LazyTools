@@ -4,6 +4,12 @@ Program created by eRaMvn.
 
 A simple program that generates commands for pentesters to avoid mistakes during an engagement
 
+Please run
+
+```
+pip install -r requirements.txt
+```
+
 _positional arguments:_
 
    [source ip]    source ip address - usually attacker's ip address
@@ -23,7 +29,7 @@ _optional arguments:_
 ## Sample Output:
 
 PS C:\Users\eRaMvn> & "C:/Users/eRaMvn/AppData/Local/Programs/Python/Python37-32/python.exe" "d:/GoldFish/GoldFishCmd.py" 10.11.12.13 10.11.12.230
-
+```
 You are currently in tool selection mode.
 
 Please choose commmand to generate. Otherwise, type "list" to list tools supported, "change" to change ips and ports, "exit" to quit program.
@@ -64,7 +70,7 @@ Please choose commmand to generate. Otherwise, type "list" to list tools support
 Input: exit
 
 Bye!
-
+```
 ## Command in clipboard:
 
 "nmap -sSV -Pn -nvv -p- --reason -T4 -oN ~/Desktop/10.11.12.230_nmap_tcp_ports.txt 10.11.12.230"
