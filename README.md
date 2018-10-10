@@ -5,10 +5,15 @@ Program created by eRaMvn.
 A simple program that generates commands for pentesters to avoid mistakes during an engagement
 
 Please run
-
 ```
 pip install -r requirements.txt
 ```
+
+### Tools supports:
+
+cewl / curl / dig / enum4linux / gobuster / hydra / mount / msfvenom / mysql / nc / nikto / nmap / plink / rdesktop / reverse_shell / smbclient / smtp-user-enum / sqlmap / ssh / sshuttle / tcpdump / unicorn / wpscan
+
+### Arguments
 
 _positional arguments:_
 
@@ -72,5 +77,6 @@ Input: exit
 Bye!
 ```
 ## Command in clipboard:
-
-"nmap -sSV -Pn -nvv -p- --reason -T4 -oN ~/Desktop/10.11.12.230_nmap_tcp_ports.txt 10.11.12.230"
+```
+nmap -sSV -Pn -nvv -p- --reason -T4 -oN ~/Desktop/10.11.12.230_nmap_tcp_ports.txt 10.11.12.230
+```
