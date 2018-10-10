@@ -9,7 +9,7 @@ Please run
 pip install -r requirements.txt
 ```
 
-### Tools supports:
+### Tools supported:
 
 cewl / curl / dig / enum4linux / gobuster / hydra / mount / msfvenom / mysql / nc / nikto / nmap / plink / rdesktop / reverse_shell / smbclient / smtp-user-enum / sqlmap / ssh / sshuttle / tcpdump / unicorn / wpscan
 
