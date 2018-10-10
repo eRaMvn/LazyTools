@@ -1,8 +1,8 @@
-# GoldFish 
+# GoldFishCmd
 
 Program created by eRaMvn. 
 
-This program generates commands for pentesters to avoid mistakes during an engagement
+A simple program that generates commands for pentesters to avoid mistakes during an engagement
 
 _positional arguments:_
 
