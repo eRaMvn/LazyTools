@@ -380,9 +380,9 @@ def linux():
     options = {1 : ["Service", f"/etc/init.d"],
         2 : ["Network configuration", "/etc/network/interfaces"],
         3 : ["Nameserver configuration", "/etc/resolv.conf"],
-        4 : ["RHEL / Red Hat / CentOS / Fedora Linux Apache error file location", "/var/log/httpd/access_log"],
-        5 : ["Debian / Ubuntu Linux Apache error log file location ", "/var/log/apache2/access.log"],
-        6 : ["FreeBSD Apache error log file location", "/var/log/httpd-access.log"],
+        4 : ["RHEL / Red Hat / CentOS / Fedora Linux Apache access file location", "/var/log/httpd/access_log"],
+        5 : ["Debian / Ubuntu Linux Apache access log file location ", "/var/log/apache2/access.log"],
+        6 : ["FreeBSD Apache access log file location", "/var/log/httpd-access.log"],
         7 : ["RHEL / Red Hat / CentOS / Fedora Linux Apache error file location", "/var/log/httpd/error_log"],
         8 : ["Debian / Ubuntu Linux Apache error log file location ", "/var/log/apache2/error.log"],
         9 : ["FreeBSD Apache error log file location", "/var/log/httpd-error.log"],
@@ -479,6 +479,8 @@ while True:
             elif selection == "linux" or selection == "windows":
                 systems[selection]()
                 break
+            else:
+                print("Unrecognized input!")
     elif choice == "change":
         source_ip, target_ip, local_port = change(source_ip, target_ip, local_port)
     elif choice == "exit":
