@@ -456,7 +456,7 @@ options = {"nmap" : nmap,
            "tar": tar,
            "mssql": mssql,
            "postgres": postgres,
-           "wfuzz", : wfuzz,
+           "wfuzz" : wfuzz,
 }
 
 systems = {"windows" : windows, "linux" : linux}
