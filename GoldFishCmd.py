@@ -17,7 +17,6 @@ target_ip = args.target
 store_directory = args.d
 
 """
-This is another change
 Eliminate the / at the end of directory
 """
 if store_directory[-1] == "/":
