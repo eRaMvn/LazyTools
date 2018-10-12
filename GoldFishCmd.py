@@ -22,10 +22,6 @@ Eliminate the / at the end of directory
 if store_directory[-1] == "/":
     store_directory = store_directory[:-1]
 
-"""
-Add the option to ask for the change of ip, ports, maybe parse nmap file
-If select 1, copy to clip board
-"""
 def tools(listoftools):
     for tool in sorted(listoftools):
         print(tool, end=' / ')
