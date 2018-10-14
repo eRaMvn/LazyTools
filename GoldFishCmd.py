@@ -2,6 +2,9 @@
 import argparse
 import pyperclip
 
+# import only system from os 
+from os import system, name 
+
 parser = argparse.ArgumentParser(description='Program created by eRaMvn. This program generates commands for pentesters to avoid mistakes during an engagement', 
     usage='%(prog)s source_ip [-lp your_local_port] target_ip [-d directory_to_store_file]')
 parser.add_argument('source', metavar=" [source ip]", help="source ip address - usually attacker's ip address")
@@ -17,10 +20,22 @@ target_ip = args.target
 store_directory = args.d
 
 """
+Implement clear screen, add impacket
 Eliminate the / at the end of directory
 """
 if store_directory[-1] == "/":
     store_directory = store_directory[:-1]
+
+# define our clear function 
+def clear(): 
+  
+    # for windows 
+    if name == 'nt': 
+        _ = system('cls') 
+  
+    # for mac and linux(here, os.name is 'posix') 
+    else: 
+        _ = system('clear') 
 
 def tools(listoftools):
     for tool in sorted(listoftools):
@@ -35,30 +50,33 @@ def copy_to_clipboard(options):
         print(str(key) + ". " + options[key][1])
         print("-" * 70)
 
-    print('Please choose commmand number to copy to clipboard. Type "0" to return to tool selection ')
+    print('Please select commmand number to copy to clipboard. Type "0" to return to tool selection, "c" to clear screen. ')
     while True:
         try:
-            choice = int(input("Input: ").strip())
-        except:
-            print(f"Please enter an integer from -1 to {len(options)}. 0 to return, -1 to list options")
-        else:
-            if choice == 0:
+            choice = input("Input: ").strip()
+            if choice == "0" or choice == "b" or choice == "back" or choice == "exit":
                 print("-" * 70)
                 print("Taking you back to tool selection!")
                 print("-" * 70)
                 break
-            elif choice == -1:
+            elif choice == "c" or choice == "clear":
+                clear()
+                print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
+            elif choice == "l" or choice == "list":
                 for key in options:
                     print("---" + options[key][0] + "---")
                     print(str(key) + ". " + options[key][1])
                     print("-" * 70)
-            elif choice > len(options) or choice < -1:
-                print(f"Please enter an integer from -1 to {len(options)}. 0 to return, -1 to list options")
+            elif int(choice) > len(options) or int(choice) < 0:
+                print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
             else:
                 #Copy command to clipboard
-                pyperclip.copy(options[choice][1])
+                pyperclip.copy(options[int(choice)][1])
                 print("It has been copied to your clipboard!")
-                print(f"Please enter an integer from -1 to {len(options)}. 0 to return, -1 to list options")
+                print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
+        except:
+            print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
+           
 
 def get_url():
     choice = input("Input: ").strip()
@@ -208,10 +226,11 @@ def msfvenom():
     copy_to_clipboard(options)
 
 def smbclient():
-    options = {1 : f"smbclient -L {target_ip}",
-        2 : f'smbclient "\\\\{target_ip}\<sharename>"',
-        3 : f'smbclient -U <username> //{target_ip}/<sharename>',
-        4 : f'smbclient //MOUNT/<sharename> -I {target_ip} -N',
+    var = """\\"""
+    options = {1 : ["Sample usage 1", f"smbclient -L {target_ip}"],
+        2 : ["Sample usage 2", f'smbclient "\\\\\\{var}{target_ip}\<sharename>"'],
+        3 : ["Sample usage 3", f'smbclient -U <username> //{target_ip}/<sharename>'],
+        4 : ["Sample usage 4", f'smbclient //MOUNT/<sharename> -I {target_ip} -N'],
     }
     
     copy_to_clipboard(options)
@@ -376,6 +395,19 @@ def wfuzz():
     
     copy_to_clipboard(options)
 
+def runas():
+    options = {1 : ["Sample usage", r"""runas /profile /savedcred /user:ACCESS\Administrator 'cmd.exe /c whoami > C:\temp\test.txt'"""],
+    }
+    
+    copy_to_clipboard(options)
+
+def impacket():
+    options = {1 : ["psexec sample usage", f'psexec.py HTB.local/[username]@{target_ip} "cmd.exe"'],
+        2 : ["GetUserSPNs.py sample usage", f'GetUserSPNs.py <domain>/[username][:password] -dc-ip <ip>'],
+    }
+    
+    copy_to_clipboard(options)
+
 def linux():
     options = {1 : ["Service", f"/etc/init.d"],
         2 : ["Network configuration", "/etc/network/interfaces"],
@@ -412,7 +444,7 @@ def change(source, target, port):
     target_ip = target
     local_port = port
     while True:
-        print('Please type "source" to change source ip, "target" to change target ip, "port" to change port, "back" to go back')
+        print('Please type "source" to change source ip, "target" to change target ip, "port" to change port, "c" to clear screen, "b" to go back')
         choice = input('Input: ').strip()
         if choice == "source":
             source_ip = input("Please enter the new source ip: ").strip()
@@ -423,8 +455,10 @@ def change(source, target, port):
         elif choice == "port":
             local_port = int(input("Please enter the source port: ").strip())
             print("Source port changed!")
-        elif choice == "back":
+        elif choice == "b" or choice == "back":
             return (source_ip, target_ip, local_port)
+        elif choice == "c" or choice == "clear":
+            clear()
         else:
             continue
 
@@ -457,37 +491,45 @@ options = {"nmap" : nmap,
            "mssql": mssql,
            "postgres": postgres,
            "wfuzz" : wfuzz,
+           "runas" : runas,
+           "impacket" : impacket,
 }
 
 systems = {"windows" : windows, "linux" : linux}
 
 while True:
-    print("You are currently in tool selection mode.")
-    print('Please choose commmand to generate. Otherwise, type "list" to list tools supported, "system" for interesting system files, "change" to change ips and ports, "exit" to quit program.')
+    print("You are currently in tool selection mode.  Please choose commmand to generate.")
+    print('Otherwise, type "l" to list tools supported, "s" for interesting system files, "ch" to change ips and ports, "c" to clear screen, "e" to quit program.')
     choice = input("Input: ").strip()
     
-    if choice == "list":
+    if choice == "l" or choice == "list":
         print("-" * 70)
         print("This program currently supports the following tools:")
+        print("-" * 70)
         tools(options)
-    elif choice == "system":
+    elif choice == "c" or choice == "clear":
+        clear()
+    elif choice == "s" or choice == "system":
         print("-" * 70)
         while True:
-            selection = input('Please enter "linux" for linux, "windows" for windows, "back" to go back: ').strip()
-            if selection == "back":
+            print('Enter "linux" for linux, "windows" for windows, "c" to clear screen, "b" to return.')
+            selection = input('Input: ').strip()
+            if selection == "b" or selection == "back":
                 break
             elif selection == "linux" or selection == "windows":
                 systems[selection]()
                 break
+            elif selection == "c" or selection == "clear":
+                clear()
             else:
                 print("Unrecognized input!")
-    elif choice == "change":
+    elif choice == "ch" or choice == "change":
         source_ip, target_ip, local_port = change(source_ip, target_ip, local_port)
-    elif choice == "exit":
+    elif choice == "e" or choice == "exit":
         print("Bye!")
         break
     elif choice not in options:
-        print(f"This tool {choice} is not supported yet!")
+        print(f'This tool "{choice}" is not supported yet!')
         print("This program currently supports the following tools:")
         print("-" * 70)
         tools(options)
