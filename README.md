@@ -1,4 +1,4 @@
-# GoldFishCmd
+# GoldFishCmd.py
 
 Program created by eRaMvn. 
 
@@ -88,4 +88,34 @@ Bye!
 ## Command in clipboard:
 ```
 nmap -sSV -Pn -nvv -p- --reason -T4 -oN ~/Desktop/10.11.12.230_nmap_tcp_ports.txt 10.11.12.230
+```
+
+
+-----------------------------------------------------------------------------------------------------------------------
+# order.py
+
+Program created by eRaMvn. 
+
+This program creates a new folder with the name specified and copied all files that start with that name into that folder.
+
+### Arguments
+
+_positional arguments:_
+  folder_name  specify the name of folder to create
+
+_optional arguments:_
+  -h, --help   show this help message and exit
+  
+## Sample Output:
+```
+python3 order.py 10.10.14.15
+'10.10.14.15' directory already exists!
+Do you want to remove that folder? (Y/N): Y
+moved './10.10.14.15-abc - Copy (2).txt' to './10.10.14.15/./10.10.14.15-abc - Copy (2).txt'
+moved './10.10.14.15-abc - Copy (3).txt' to './10.10.14.15/./10.10.14.15-abc - Copy (3).txt'
+moved './10.10.14.15-abc - Copy (4).txt' to './10.10.14.15/./10.10.14.15-abc - Copy (4).txt'
+moved './10.10.14.15-abc - Copy (5).txt' to './10.10.14.15/./10.10.14.15-abc - Copy (5).txt'
+moved './10.10.14.15-abc - Copy.txt' to './10.10.14.15/./10.10.14.15-abc - Copy.txt'
+moved './10.10.14.15-abc.txt' to './10.10.14.15/./10.10.14.15-abc.txt'
+
 ```
