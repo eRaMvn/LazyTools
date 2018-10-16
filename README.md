@@ -11,7 +11,11 @@ pip install -r requirements.txt
 
 ### Tools supported:
 
-cewl / curl / dig / enum4linux / gobuster / hydra / mount / msfvenom / mysql / nc / nikto / nmap / plink / rdesktop / reverse_shell / smbclient / smtp-user-enum / sqlmap / ssh / sshuttle / tcpdump / unicorn / wpscan
+cewl | curl | dig | enum4linux | gobuster | hydra | impacket | mount | msfvenom | mssql | mysql |
+
+nc | nikto | nmap | plink | postgres | powershell | rdesktop | runas | shell | smbclient |
+
+smtp-user-enum | sqlmap | ssh | sshuttle | tar | tcpdump | unicorn | wfuzz | wpscan |
 
 ### Arguments
 
