@@ -11,13 +11,13 @@ pip3 install -r requirements.txt
 
 ### Tools supported:
 
-cafae | cewl | curl | dig | enum4linux | find | gobuster | grep | hydra | impacket | merlin | 
+cafae | cewl | curl | dig | dirsearch | enum4linux | find | gobuster | grep | hydra | impacket |
 
-mount | msfvenom | mssql | mysql | nc | nikto | nmap | others | plink | postgres |
+merlin | mount | msfvenom | mssql | mysql | nc | nikto | nmap | others | patator |
 
-powershell | rdesktop | runas | shell | smbclient | smtp-user-enum | snmp | socat | sqlmap | ssh |
+plink | postgres | powershell | rdesktop | runas | shell | smbclient | smtp-user-enum | snmp | socat |
 
-sshuttle | tar | tcpdump | unicorn | wfuzz | wpscan |
+sqlmap | ssh | sshuttle | tar | tcpdump | unicorn | wfuzz | wpscan |
 
 ### Arguments
 
